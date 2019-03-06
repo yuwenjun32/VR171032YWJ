@@ -6,4 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".VRPicActivity">
 
+    <com.google.vr.sdk.widgets.pano.VrPanoramaView
+        android:id="@+id/vr_main_pic"
+        android:layout_height="0dp"
+        android:layout_width="0dp"
+        app:layout_constraintBaseline_toBaselineOf="parent"
+        app:layout_constraintBottom_toTopOf="parent"
+        app:layout_constraintEnd_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
 </android.support.constraint.ConstraintLayout>
