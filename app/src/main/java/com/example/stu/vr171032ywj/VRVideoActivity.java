@@ -6,6 +6,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
+import com.google.vr.sdk.widgets.video.VrVideoEventListener;
 import com.google.vr.sdk.widgets.video.VrVideoView;
 
 public class VRVideoActivity extends AppCompatActivity {
@@ -36,6 +37,72 @@ public class VRVideoActivity extends AppCompatActivity {
                 return null;
             }
         }.execute();
+        mVrMainVideo.setTag(true);//标识视频是否播放
+        mVrMainVideo.setEventListener(new VrVideoEventListener(){
+            @Override
+            public void onClick() {
+                super.onClick();
+                boolean isPlay=(boolean)mVrMainVideo.getTag();
+                if (isPlay){//暂停
+
+                    mVrMainVideo.pauseVideo();
+                    isPlay=false;
+                }else {//播放
+                    mVrMainVideo.pauseVideo();
+                    isPlay=true;
+                }
+                mVrMainVideo.setTag(isPlay);
+            }
+
+
+            @Override
+            public void onNewFrame() {
+                super.onNewFrame();
+                long duration=mVrMainVideo.getDuration();//视频长度，毫秒
+                long currentPosition=mVrMainVideo.getCurrentPosition();//当前位置
+                mSbMainProgress.setMax(100);
+                int percent=(int)(currentPosition*100f/duration);
+                mSbMainProgress.setProgress(percent);
+                mTvMainProgress.setText(percent+"%");
+            }
+
+            @Override
+            public void onLoadSuccess() {
+                super.onLoadSuccess();
+                mSbMainProgress.setMax(100);
+                mSbMainProgress.setProgress(0);
+                mTvMainProgress.setText(0+"%");
+            }
+
+            @Override
+            public void onCompletion() {
+                super.onCompletion();
+                mSbMainProgress.setMax(100);
+                mSbMainProgress.setProgress(100);
+                mTvMainProgress.setText(100+"%");
+                mVrMainVideo.seekTo(0);
+            }
+        });
+        mSbMainProgress.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            @Override
+            public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+                if (fromUser) {//拖拉视频进度条
+                    long duration = mVrMainVideo.getDuration();
+                    long newPosition=(int)(duration*progress*0.01);
+                    mVrMainVideo.seekTo(newPosition);
+                    }
+                }
+
+            @Override
+            public void onStartTrackingTouch(SeekBar seekBar) {
+
+            }
+
+            @Override
+            public void onStopTrackingTouch(SeekBar seekBar) {
+
+            }
+        });
     }
 
     private void initView() {
@@ -44,4 +111,25 @@ public class VRVideoActivity extends AppCompatActivity {
         mTvMainProgress = (TextView) findViewById(R.id.tv_main_progress);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mVrMainVideo.resumeRendering();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        mVrMainVideo.resumeRendering();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mVrMainVideo.shutdown();
+        if (task!=null){
+            task.cancel(true);
+            task=null;
+        }
+    }
 }
